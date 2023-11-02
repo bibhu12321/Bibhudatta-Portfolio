@@ -1,50 +1,79 @@
-import React, { useState, useEffect } from "react";
-import Preloader from "../src/components/Pre";
-import Navbar from "./components/Navbar";
-import Home from "./components/Home/Home";
-import About from "./components/About/About";
-import Projects from "./components/Projects/Projects";
-import Footer from "./components/Footer";
-import Resume from "./components/Resume/ResumeNew";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate
-} from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
-import "./style.css";
-import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+const { MemoryStorage } = require("botbuilder");
+const pdfParse = require('pdf-parse');
+const fs = require('fs');
+const { Configuration, OpenAIApi } = require('openai');
 
-function App() {
-  const [load, upadateLoad] = useState(true);
+let fileContentSegments = [];
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      upadateLoad(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <Router>
-      <Preloader load={load} />
-      <div className="App" id={load ? "no-scroll" : "scroll"}>
-        <Navbar />
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/project" element={<Projects />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/resume" element={<Resume />} />
-          <Route path="*" element={<Navigate to="/"/>} />
-        </Routes>
-        <Footer />
-      </div>
-    </Router>
-  );
+function splitIntoSegments(text) {
+  const segmentSize = 4096;
+  const segments = [];
+  let currentIndex = 0;
+  while (currentIndex < text.length) {
+    segments.push(text.slice(currentIndex, currentIndex + segmentSize));
+    currentIndex += segmentSize;
+  }
+  return segments;
 }
 
-export default App;
+function loadPDF() {
+  return new Promise((resolve, reject) => {
+    fs.readFile('OM6in1Files (1).pdf', (err, dataBuffer) => {
+      if (err) {
+        reject(`Error loading PDF file: ${err}`);
+      } else {
+        pdfParse(dataBuffer).then((pdfData) => {
+          const { text } = pdfData;
+          fileContentSegments = splitIntoSegments(text);
+          console.log('PDF file loaded and segmented.');
+          resolve();
+        }).catch((err) => {
+          reject(`Error parsing PDF: ${err}`);
+        });
+      }
+    });
+  });
+}
+
+async function run(context) {
+  await loadPDF();
+
+  const configuration = new Configuration({
+    apiKey: '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', // Replace with your OpenAI API key
+  });
+
+  const openai = new OpenAIApi(configuration);
+
+  const storage = new MemoryStorage();
+
+  const userQuestion = context.activity.text;
+  let foundAnswer = false;
+
+  for (let i = 0; i < fileContentSegments.length; i++) {
+    const segment = fileContentSegments[i];
+   
+    const prompt = `You are a HR policy bot.  " User: ${userQuestion}\nPDF: ${segment}\nAI:`;
+
+    const gptResponse = await openai.createCompletion({
+      model: 'text-davinci-003',
+      prompt: prompt,
+      max_tokens: 400,
+      temperature: 0.0,
+    });
+console.log(gptResponse.data.choices[0].text);
+    const newAnswer = gptResponse.data.choices[0].text.trim();
+    if (newAnswer !== '') {
+      foundAnswer = true;
+      await context.sendActivity(newAnswer);
+      break;
+    }
+  }
+
+  if (!foundAnswer) {
+    await context.sendActivity('I am sorry, I couldn\'t find an appropriate response.');
+  }
+}
+
+module.exports = {
+  run
+};

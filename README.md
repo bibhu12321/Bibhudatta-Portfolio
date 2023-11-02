@@ -1,72 +1,106 @@
-# Getting Started with Create React App
+# Overview of the AI Chat Bot template
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This template showcases a bot app that responds to user questions like an AI assistant. This enables your users to talk with the AI assistant in Teams to find information.
 
-## Available Scripts
+The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-In the project directory, you can run:
+- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
+  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+    - [Use Azure OpenAI](#use-azure-openai)
+  - [What's included in the template](#whats-included-in-the-template)
+  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Additional information and references](#additional-information-and-references)
 
-### `npm start`
+## Get started with the AI Chat Bot template
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+> **Prerequisites**
+>
+> To run the AI Chat Bot template in your local dev machine, you will need:
+>
+> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - An account with [OpenAI](https://platform.openai.com/).
+>
+> **Note**
+>
+> Teams AI Library is currently in preview version.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
+1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
+1. You will receive a welcome message from the bot, or send any message to get a response.
 
-### `npm test`
+**Congratulations**! You are running an application that can now interact with users in Teams:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+![ai chat bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
 
-### `npm run build`
+### Use Azure OpenAI
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI as AI service.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+> **Prerequisites**
+>
+> - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
+1. In `src/app.js`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
+    ```javascript
+    // Use OpenAI
+    /**
+    const planner = new OpenAIPlanner({
+      apiKey: config.openAIKey,
+      defaultModel: "gpt-3.5-turbo",
+      useSystemMessage: true,
+      logRequests: true,
+    });
+    */
+    // Uncomment the following lines to use Azure OpenAI
+    const planner = new AzureOpenAIPlanner({
+      apiKey: config.azureOpenAIKey,
+      endpoint: config.azureOpenAIEndpoint,
+      defaultModel: "gpt-35-turbo",
+      useSystemMessage: true,
+      logRequests: true
+    });
+    ```
+1. In `src/app.js`, update `defaultModel` to your own model deployment name.
 
-### `npm run eject`
+## What's included in the template
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+| Folder       | Contents                                            |
+| - | - |
+| `.vscode`    | VSCode files for debugging                          |
+| `appPackage` | Templates for the Teams application manifest        |
+| `env`        | Environment files                                   |
+| `infra`      | Templates for provisioning Azure resources          |
+| `src`        | The source code for the application                 |
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The following files can be customized and demonstrate an example implementation to get you started.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+| File                                 | Contents                                           |
+| - | - |
+|`src/index.js`| Sets up and configures the AI Chat Bot.|
+|`src/app.js`| Handles business logics for the AI Chat Bot.|
+|`src/config.js`| Defines the environment variables.|
+|`src/prompts/chat/skprompt.txt`| Defines the prompt.|
+|`src/prompts/chat/config.json`| Configures the prompt.|
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-## Learn More
+| File                                 | Contents                                           |
+| - | - |
+|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
+|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Extend the AI Chat Bot template with more AI capabilities
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Chat Bot template with more AI capabilities.
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# Bibhudatta-Portfolio
-# test12
+## Additional information and references
+- [Teams AI library](https://aka.ms/teams-ai-library)
+- [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
+- [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+- [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
