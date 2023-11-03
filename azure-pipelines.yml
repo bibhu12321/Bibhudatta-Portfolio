@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  name: Azure Pipelines
+  name: Hosted Agent
 
 steps:
 - task: NodeTool@0
