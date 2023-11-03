@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  vmImage: Default
+  name: default
 
 steps:
 - task: NodeTool@0
