@@ -19,3 +19,15 @@ steps:
     npm install
     npm run build
   displayName: 'npm install and build'
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'Azure subscription 1(731b3e72-b366-4572-96b2-499a0eadc0cb)'
+    appType: 'webAppLinux'
+    WebAppName: 'nodedeployapp'
+    deployToSlotOrASE: true
+    ResourceGroupName: 'nodedeployapp_group'
+    SlotName: 'production'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    RuntimeStack: 'NODE|16-lts'
+    StartupCommand: 'npm start'
